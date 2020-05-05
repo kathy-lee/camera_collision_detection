@@ -25,7 +25,7 @@ int main(int argc, const char *argv[])
     /* INIT VARIABLES AND DATA STRUCTURES */
 
     // data location
-    string dataPath = "../";
+    string dataPath = "/home/kangle/Projects/SFND_2D_Feature_Tracking/";
 
     // camera
     string imgBasePath = dataPath + "images/";
@@ -67,11 +67,13 @@ int main(int argc, const char *argv[])
         for(size_t i = 0; i < dataBufferSize; i++)
         {
             dataBuffer.push_back(frame);
-            imgNumber++;
-            imgFullFilename = imgBasePath + imgPrefix + imgNumber.str() + imgFileType;
+            ostringstream imgNo;
+            imgNo << setfill('0') << setw(imgFillWidth) << imgStartIndex + imgIndex + i + 1;
+            imgFullFilename = imgBasePath + imgPrefix + imgNo.str() + imgFileType;
             img = cv::imread(imgFullFilename);
             cv::cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
             frame.cameraImg = imgGray;
+            cout << i << "th image into buffer" << endl;
         }
 
         //// EOF STUDENT ASSIGNMENT
@@ -81,7 +83,7 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "SHITOMASI";
+        string detectorType = "HARRIS";//"FAST";//"SHITOMASI";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -89,11 +91,11 @@ int main(int argc, const char *argv[])
 
         if (detectorType.compare("SHITOMASI") == 0)
         {
-            detKeypointsShiTomasi(keypoints, imgGray, false);
+            detKeypointsShiTomasi(keypoints, imgGray, true);
         }
         else
         {
-            //...
+            detKeypointsModern(keypoints, imgGray, detectorType, true);
         }
         //// EOF STUDENT ASSIGNMENT
 

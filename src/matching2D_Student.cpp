@@ -101,3 +101,114 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
         cv::waitKey(0);
     }
 }
+
+void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
+{
+    int blockSize = 2;
+    int apertureSize = 3;
+    int minResponse = 100;
+    double k = 0.04;
+    
+    cv::Mat dst, dst_norm, dst_norm_scaled;
+    dst = cv::Mat::zeros(img.size(), CV_32FC1);
+    cv::cornerHarris(img, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
+    cv::normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
+    cv::convertScaleAbs(dst_norm, dst_norm_scaled);
+
+    double t = (double)cv::getTickCount();
+    float maxOverlap = 20.0;
+    for(size_t i=0; i<dst_norm.rows; i++)
+        for(int j=0; j<dst_norm.cols; j++)
+        {
+            int res = (int)dst_norm.at<float>(i,j);
+            if(res>minResponse)
+            {
+                cv::KeyPoint keypoint;
+                keypoint.pt = cv::Point2f(j,i);
+                keypoint.size = 2*apertureSize;
+                keypoint.response = res;
+                bool bOverlap = false;
+                float fOverlap = 0;
+                for(auto it: keypoints)
+                {
+                    fOverlap = cv::KeyPoint::overlap(it, keypoint);
+                    if(fOverlap > maxOverlap)
+                    {
+                        bOverlap = true;
+                        if(keypoint.response > it.response)
+                        {
+                            it = keypoint;
+                            break;
+                        }
+                    }    
+                }
+                if(!bOverlap)
+                    keypoints.push_back(keypoint);
+            }
+        }
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    cout << "HARRIS detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+    //visualize keypoints
+    if(bVis)
+    {
+        std::string windowName = "Harris Corner Detection Results";
+        cv::namedWindow(windowName, 5);
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        cv::imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}
+
+void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis)
+{
+    double t = (double)cv::getTickCount();
+    if(detectorType == "HARRIS")
+    {
+        detKeypointsHarris(keypoints, img, bVis);
+        return;
+    }
+    else if(detectorType == "FAST")
+    {
+        int threshold=10;
+        bool NMSflag=true;
+        cv::FAST(img, keypoints, threshold, NMSflag);
+    }
+    else if(detectorType == "BRISK")
+    {
+        int threshold=60;
+        int octaves=4; 
+        float patternScales=1.0f;
+        cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
+        //cv::BRISK detector(threshold, octaves, patternScales);
+        brisk->detect(img, keypoints);
+    }
+    else if(detectorType == "ORB")
+    {
+        cv::Ptr<cv::ORB> detector = cv::ORB::create();
+        detector->detect(img, keypoints);
+    }
+    else if(detectorType == "AKAZE")
+    {
+        cv:: Ptr<cv::AKAZE> detector = cv::AKAZE::create();
+        detector->detect(img, keypoints);
+    }
+    else if(detectorType == "SIFT")
+    {
+        cv:: Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
+        detector->detect(img, keypoints);
+
+    }
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    cout << detectorType << " with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+    if (bVis)
+    {
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        string windowName = "Shi-Tomasi Corner Detector Results";
+        cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+    return;
+}
