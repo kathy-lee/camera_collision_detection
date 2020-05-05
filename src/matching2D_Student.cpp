@@ -48,12 +48,28 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
 
         extractor = cv::BRISK::create(threshold, octaves, patternScale);
     }
+    else if (descriptorType.compare("ORB") == 0)
+    {
+        extractor = cv::ORB::create();
+    }
+    else if (descriptorType.compare("FREAK") == 0)
+    {
+        extractor = cv::xfeatures2d::FREAK::create();
+    }
+    else if (descriptorType.compare("AKAZE") == 0)
+    {
+        extractor = cv::AKAZE::create();
+    }
+    else if (descriptorType.compare("SIFT") == 0)
+    {
+        extractor = cv::xfeatures2d::SIFT::create();
+    }
     else
     {
-
-        //...
+        cout << "invalid descriptor name" << endl;
+        return;
     }
-
+    
     // perform feature description
     double t = (double)cv::getTickCount();
     extractor->compute(img, keypoints, descriptors);
@@ -163,42 +179,42 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
 void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis)
 {
     double t = (double)cv::getTickCount();
-    if(detectorType == "HARRIS")
-    {
-        detKeypointsHarris(keypoints, img, bVis);
-        return;
-    }
-    else if(detectorType == "FAST")
+    if(detectorType.compare("FAST") == 0)
     {
         int threshold=10;
         bool NMSflag=true;
         cv::FAST(img, keypoints, threshold, NMSflag);
     }
-    else if(detectorType == "BRISK")
+    else if(detectorType.compare("BRISK") == 0)
     {
         int threshold=60;
         int octaves=4; 
         float patternScales=1.0f;
         cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
-        //cv::BRISK detector(threshold, octaves, patternScales);
         brisk->detect(img, keypoints);
     }
-    else if(detectorType == "ORB")
+    else if(detectorType.compare("ORB") == 0)
     {
         cv::Ptr<cv::ORB> detector = cv::ORB::create();
         detector->detect(img, keypoints);
     }
-    else if(detectorType == "AKAZE")
+    else if(detectorType.compare("AKAZE") == 0)
     {
         cv:: Ptr<cv::AKAZE> detector = cv::AKAZE::create();
         detector->detect(img, keypoints);
     }
-    else if(detectorType == "SIFT")
+    else if(detectorType.compare("SIFT") == 0)
     {
         cv:: Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
         detector->detect(img, keypoints);
 
     }
+    else
+    {
+        cout << "invalid detector name" << endl;
+        return;
+    }
+    
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
     cout << detectorType << " with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
     if (bVis)

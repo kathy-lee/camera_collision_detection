@@ -90,13 +90,11 @@ int main(int argc, const char *argv[])
         //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
 
         if (detectorType.compare("SHITOMASI") == 0)
-        {
-            detKeypointsShiTomasi(keypoints, imgGray, true);
-        }
-        else
-        {
+            detKeypointsShiTomasi(keypoints, imgGray, false);
+        else if(detectorType.compare("HARRIS") == 0)
+            detKeypointsHarris(keypoints, imgGray, false);
+        else 
             detKeypointsModern(keypoints, imgGray, detectorType, true);
-        }
         //// EOF STUDENT ASSIGNMENT
 
         //// STUDENT ASSIGNMENT
@@ -105,11 +103,25 @@ int main(int argc, const char *argv[])
         // only keep keypoints on the preceding vehicle
         bool bFocusOnVehicle = true;
         cv::Rect vehicleRect(535, 180, 180, 150);
+        vector<cv::KeyPoint> vehicleKeypoints; // create empty feature list for current image
         if (bFocusOnVehicle)
         {
-            // ...
+            for(auto it=keypoints.begin(); it!=keypoints.end();++it)
+            {
+                //cout << (*it).pt << endl;
+                if(vehicleRect.contains((*it).pt))
+                    vehicleKeypoints.push_back(*it);
+            }
         }
+        keypoints = vehicleKeypoints;
 
+        // cout << keypoints.size() << endl;
+        // cv::Mat visImage = imgGray.clone();
+        // cv::drawKeypoints(imgGray, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        // string windowName = "crop detector Results";
+        // cv::namedWindow(windowName, 6);
+        // imshow(windowName, visImage);
+        // cv::waitKey(0);
         //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
