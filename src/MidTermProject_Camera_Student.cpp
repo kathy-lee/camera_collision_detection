@@ -25,7 +25,7 @@ int main(int argc, const char *argv[])
     /* INIT VARIABLES AND DATA STRUCTURES */
 
     // data location
-    string dataPath = "/home/kangle/Projects/SFND_2D_Feature_Tracking/";
+    string dataPath = "../";
 
     // camera
     string imgBasePath = dataPath + "images/";
@@ -62,18 +62,11 @@ int main(int argc, const char *argv[])
         // push image into data frame buffer
         DataFrame frame;
         frame.cameraImg = imgGray;
-        //dataBuffer.push_back(frame);
-        dataBuffer.clear();
-        for(size_t i = 0; i < dataBufferSize; i++)
+        dataBuffer.push_back(frame);
+        cout << "insert " << imgFullFilename << " into buffer" << endl;
+        if(dataBuffer.size() > dataBufferSize)
         {
-            dataBuffer.push_back(frame);
-            ostringstream imgNo;
-            imgNo << setfill('0') << setw(imgFillWidth) << imgStartIndex + imgIndex + i + 1;
-            imgFullFilename = imgBasePath + imgPrefix + imgNo.str() + imgFileType;
-            img = cv::imread(imgFullFilename);
-            cv::cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
-            frame.cameraImg = imgGray;
-            cout << i << "th image into buffer" << endl;
+            dataBuffer.erase(dataBuffer.begin());
         }
 
         //// EOF STUDENT ASSIGNMENT
@@ -115,13 +108,6 @@ int main(int argc, const char *argv[])
         }
         keypoints = vehicleKeypoints;
 
-        // cout << keypoints.size() << endl;
-        // cv::Mat visImage = imgGray.clone();
-        // cv::drawKeypoints(imgGray, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-        // string windowName = "crop detector Results";
-        // cv::namedWindow(windowName, 6);
-        // imshow(windowName, visImage);
-        // cv::waitKey(0);
         //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
@@ -164,8 +150,8 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
+            string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
+            string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
             string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
 
             //// STUDENT ASSIGNMENT
@@ -175,7 +161,7 @@ int main(int argc, const char *argv[])
             matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
                              matches, descriptorType, matcherType, selectorType);
-            cout << matches.size() << endl;
+            cout << matches.size() << " points matches found" << endl;
             //// EOF STUDENT ASSIGNMENT
 
             // store matches in current data frame
@@ -197,7 +183,7 @@ int main(int argc, const char *argv[])
                 string windowName = "Matching keypoints between two camera images";
                 cv::namedWindow(windowName, 7);
                 cv::imshow(windowName, matchImg);
-                cout << "Press key to continue to next image" << endl;
+                cout << "Press key to continue to next image\n" << endl;
                 cv::waitKey(0); // wait for key to be pressed
             }
             bVis = false;
