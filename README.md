@@ -32,3 +32,12 @@ See the classroom instruction and code comments for more details on each of thes
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
 4. Run it: `./2D_feature_tracking`.
+
+## Performance Evaluation Spreadsheet
+
+https://docs.google.com/spreadsheets/d/1jUsR-cg6xymtA7bkfWWqy6lwrnr8AfOWsjBaUghuDEg/edit?usp=sharing
+
+Conclusion of MP.9: according to the experiment results in spreadsheet, the Top 3 detector and descriptor combinations are : 
+No.1 : HARRIS detector + BRIEF descriptor
+No.2 : FAST detector + BRIEF descriptor
+No.3 : HARRIS detector + ORB descriptor.
