@@ -54,7 +54,6 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
     cv::Ptr<cv::DescriptorExtractor> extractor;
     if (descriptorType.compare("BRISK") == 0)
     {
-
         int threshold = 30;        // FAST/AGAST detection threshold score.
         int octaves = 3;           // detection octaves (use 0 to do single scale)
         float patternScale = 1.0f; // apply this scale to the pattern used for sampling the neighbourhood of a keypoint.
@@ -76,6 +75,10 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
     else if (descriptorType.compare("SIFT") == 0)
     {
         extractor = cv::xfeatures2d::SIFT::create();
+    }
+    else if (descriptorType.compare("BRIEF") == 0)
+    {
+        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
     }
     else
     {
@@ -229,7 +232,14 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
     }
     
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    double total = 0.0;
+    for(auto kp: keypoints)
+    {
+        total = total + kp.size;
+    }
+    double meansize = total / keypoints.size();
     cout << detectorType << " with n= " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+    cout << "keypoints neighborhood: " << meansize << endl;
     if (bVis)
     {
         cv::Mat visImage = img.clone();
